@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">FullVideoDemo</string>
+	<string name="ble_not_supported">BLE 功能不支持</string>
+	<string name="connected">连接成功</string>
+	<string name="disconnected">断开连接</string>
+	<string name="error_bluetooth_not_supported">Bluetooth 功能不支持</string>
+	<string name="unknown_characteristic">Unknown characteristic</string>
+	<string name="unknown_service">Unknown service</string>
+</resources>
