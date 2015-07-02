@@ -10,7 +10,7 @@ public class Constants {
 	public final static String SD_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator;
 	public final static String VIDEO_PATH = SD_PATH + TAG + File.separator;
 	public final static long ONEAIR_DELAY = 10 * 60 * 1000;
-	public final static String DEVICE_ADDRESS = "B4:99:4C:65:6D:DA";// sanyuki // 望京的sanyuki
+	public final static String DEVICE_ADDRESS = "B4:99:4C:4C:D2:B2";
 	// "B4:99:4C:65:6D:DA"; sanyukish // 上海展会
 	// "B4:99:4C:4C:CC:37";// 西安展示
 	// "B4:99:4C:4C:D2:B2"// 望京的sanyuki
