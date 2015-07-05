@@ -1,5 +1,4 @@
 package com.thingstec.ble;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +14,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.text.TextUtils;
 import android.util.Log;
+import com.oneair.Constants;
 import com.oneair.sanyuki.R;
 
 /**
@@ -42,7 +42,7 @@ public abstract class DeviceServiceActivity extends DeviceScanActivity {
 			// Automatically connects to the device upon successful start-up initialization.
 			mBluetoothLeService.connect(mDeviceAddress);
 		}
-		
+
 		@Override
 		public void onServiceDisconnected(ComponentName componentName) {
 			mBluetoothLeService = null;
@@ -75,7 +75,7 @@ public abstract class DeviceServiceActivity extends DeviceScanActivity {
 			}
 		}
 	};
-	
+
 	private BluetoothGattCharacteristic findBluetoothGattCharacteristic(ArrayList<ArrayList<BluetoothGattCharacteristic>> mGattCharacteristics) {
 		BluetoothGattCharacteristic characteristic = null;
 		for (ArrayList<BluetoothGattCharacteristic> items : mGattCharacteristics) {
@@ -88,7 +88,7 @@ public abstract class DeviceServiceActivity extends DeviceScanActivity {
 		}
 		return characteristic;
 	}
-	
+
 	// If a given GATT characteristic is selected, check for supported features. This sample
 	// demonstrates 'Read' and 'Notify' features. See
 	// http://d.android.com/reference/android/bluetooth/BluetoothGatt.html for the complete
@@ -116,36 +116,42 @@ public abstract class DeviceServiceActivity extends DeviceScanActivity {
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 	}
-	
+
 	@Override
 	protected void onResume() {
 		super.onResume();
-		registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
-		reconnect();
+		if (!Constants.CLOUD_READ) {
+			registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+			reconnect();
+		}
 	}
-	
+
 	@Override
 	protected void onPause() {
 		super.onPause();
-		unregisterReceiver(mGattUpdateReceiver);
+		if (!Constants.CLOUD_READ) {
+			unregisterReceiver(mGattUpdateReceiver);
+		}
 	}
-	
+
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		unbindBleService();
+		if (!Constants.CLOUD_READ) {
+			unbindBleService();
+		}
 	}
-	
+
 	@Override
 	public void scanDevice(String address) {
 		bindBleService(address);
 	}
-	
+
 	private void bindBleService(String address) {
 		mDeviceAddress = address;
 		if (!mIsBinded) {
@@ -154,7 +160,7 @@ public abstract class DeviceServiceActivity extends DeviceScanActivity {
 			mIsBinded = true;
 		}
 	}
-	
+
 	private void unbindBleService() {
 		if (mIsBinded) {
 			unbindService(mServiceConnection);
@@ -162,18 +168,18 @@ public abstract class DeviceServiceActivity extends DeviceScanActivity {
 			mIsBinded = false;
 		}
 	}
-	
+
 	public void reconnect() {
 		if (mBluetoothLeService != null && !TextUtils.isEmpty(mDeviceAddress)) {
 			final boolean result = mBluetoothLeService.connect(mDeviceAddress);
 			Log.d(TAG, "Connect request result=" + result);
 		}
 	}
-	
+
 	public abstract void updateConnectionState(final int resourceId);
-	
+
 	public abstract void displayData(String data);
-	
+
 	// Demonstrates how to iterate through the supported GATT Services/Characteristics.
 	// In this sample, we populate the data structure that is bound to the ExpandableListView
 	// on the UI.
@@ -209,7 +215,7 @@ public abstract class DeviceServiceActivity extends DeviceScanActivity {
 			gattCharacteristicData.add(gattCharacteristicGroupData);
 		}
 	}
-	
+
 	private static IntentFilter makeGattUpdateIntentFilter() {
 		final IntentFilter intentFilter = new IntentFilter();
 		intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);

@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.text.TextUtils;
@@ -15,13 +16,18 @@ import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.avos.avoscloud.AVException;
 import com.avos.avoscloud.AVOSCloud;
 import com.avos.avoscloud.AVObject;
+import com.avos.avoscloud.AVQuery;
+import com.avos.avoscloud.GetCallback;
 import com.oneair.Constants;
 import com.oneair.fragment.VideoFragment;
 import com.oneair.sanyuki.R;
 import com.oneair.utils.AlarmUtils;
 import com.thingstec.ble.DeviceServiceActivity;
+import com.umeng.update.UmengUpdateAgent;
+
 public class MainActivity extends DeviceServiceActivity {
 	private static final String TAG = MainActivity.class.getSimpleName();
 	private static final int MAX = 15;
@@ -29,63 +35,68 @@ public class MainActivity extends DeviceServiceActivity {
 	private final static String[] NAMES = new String[] { "湿度", "温度", "PM2.5", "PM1.0", "PM10" };
 	private final static SimpleDateFormat DATE_FORMAT_ZH = new SimpleDateFormat("yyyy年MM月dd日");
 	private final static SimpleDateFormat TIME_FORMAT_ZH = new SimpleDateFormat("E HH:mm");
-	private boolean mIsConnect;
-	private PendingIntent mOperation;
-	private WakeLock mWakeLock;
 	private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			showVideoDialog();
 		}
 	};
+	private boolean mIsConnect;
+	private PendingIntent mOperation;
+	private WakeLock mWakeLock;
+	private File[] mVideos;
+	private boolean mRepeatingAlarm;
 	private long mCurrentTime, mPluseTime, mSaveTime, mChangeTime;
 	private TextView mDateText, mTimeText;
 	private TextView mHumidityText, mTemperatureText, mPm25Text, mPm1Text, mPm10Text;
 	private TextView mHumidityLabel, mTemperatureLabel, mPm25Label, mPm1Label, mPm10Label;
 	private int mIndex;
-	private File[] mVideos;
 	private ImageView mEnvImage;
 	private int mEnvIndex;
+	private Handler mCloudReadHandler = new Handler() {
+		public void handleMessage(android.os.Message msg) {
+			removeMessages(msg.what);
+			AVQuery<AVObject> query = AVQuery.getQuery(Constants.AVOS_APP_TAG);
+			query.addDescendingOrder("createAt"); // 递减创建时间
+			query.getFirstInBackground(mCallback);
+			sendEmptyMessageDelayed(msg.what, 10 * 60 * 1000);
+		};
+	};
+	private GetCallback<AVObject> mCallback = new GetCallback<AVObject>() {
+		@Override
+		public void done(AVObject object, AVException e) {
+			final AVObject testObject = object;
+			final int humidity = testObject.getInt("humidity");
+			final int temperature = testObject.getInt("temperature");
+			final int pm25 = testObject.getInt("pm25");
+			final int pm1 = testObject.getInt("pm1");
+			final int pm10 = testObject.getInt("pm10");
+			final String data = String.format("%1$d:%2$d:%3$d:%4$d:%5$d", humidity, temperature, pm25, pm1, pm10);
+			displayData(data);
+		}
+	};
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		AVOSCloud.initialize(this, Constants.APP_ID, Constants.APP_KEY);
+		UmengUpdateAgent.setDefault();
+		UmengUpdateAgent.silentUpdate(this);
+		AVOSCloud.initialize(this, Constants.AVOS_APP_ID, Constants.AVOS_APP_KEY);
 		setContentView(R.layout.activity_main);
 		initViews();
-		initDatas();
-	}
-
-	private void initDatas() {
+		if (Constants.CLOUD_READ) {
+			mCloudReadHandler.sendEmptyMessage(1);
+		}
 		mVideos = new File(Constants.VIDEO_PATH).listFiles();
 		if (mVideos == null) {
 			Toast.makeText(this, "外卡中没有视频文件", Toast.LENGTH_LONG).show();
+			mRepeatingAlarm = false;
 			return;
 		}
+		mRepeatingAlarm = true;
 		mOperation = PendingIntent.getBroadcast(this, 0, new Intent("MYALARMRECEIVER"), 0);
-		AlarmUtils.startRepeatingAlarm(this, Constants.ONEAIR_DELAY, mOperation);
+		AlarmUtils.startRepeatingAlarm(this, Constants.VIDEO_CHANGE_DELAY, mOperation);
 		registerReceiver();
-	}
-
-	private void initViews() {
-		mEnvImage = (ImageView) findViewById(R.id.env_image);
-		mDateText = (TextView) findViewById(R.id.date_text);
-		mTimeText = (TextView) findViewById(R.id.time_text);
-		mHumidityText = (TextView) findViewById(R.id.humidity_text);
-		mTemperatureText = (TextView) findViewById(R.id.temperature_text);
-		mPm25Text = (TextView) findViewById(R.id.pm25_text);
-		mPm1Text = (TextView) findViewById(R.id.pm1_text);
-		mPm10Text = (TextView) findViewById(R.id.pm10_text);
-		mHumidityLabel = (TextView) findViewById(R.id.humidity_label);
-		mTemperatureLabel = (TextView) findViewById(R.id.temperature_label);
-		mPm25Label = (TextView) findViewById(R.id.pm25_label);
-		mPm1Label = (TextView) findViewById(R.id.pm1_label);
-		mPm10Label = (TextView) findViewById(R.id.pm10_label);
-		mHumidityLabel.setText(NAMES[0]);
-		mTemperatureLabel.setText(NAMES[1]);
-		mPm25Label.setText(NAMES[2]);
-		mPm1Label.setText(NAMES[3]);
-		mPm10Label.setText(NAMES[4]);
 	}
 
 	@Override
@@ -106,8 +117,10 @@ public class MainActivity extends DeviceServiceActivity {
 
 	@Override
 	protected void onDestroy() {
-		unregisterReceiver();
-		AlarmUtils.cancelRepeatingAlarm(this, mOperation);
+		if (mRepeatingAlarm) {
+			unregisterReceiver();
+			AlarmUtils.cancelRepeatingAlarm(this, mOperation);
+		}
 		super.onDestroy();
 	}
 
@@ -144,7 +157,9 @@ public class MainActivity extends DeviceServiceActivity {
 		}
 		if (current - mSaveTime > 10 * 60 * 1000) {
 			mSaveTime = current;
-			saveInBackground(data);
+			if (!Constants.CLOUD_READ) {
+				saveInBackground(data);
+			}
 		}
 		if (current - mChangeTime > 5 * 1000) {
 			mChangeTime = current;
@@ -155,6 +170,27 @@ public class MainActivity extends DeviceServiceActivity {
 	@Override
 	public String getDeviceAddress() {
 		return Constants.DEVICE_ADDRESS;
+	}
+
+	private void initViews() {
+		mEnvImage = (ImageView) findViewById(R.id.env_image);
+		mDateText = (TextView) findViewById(R.id.date_text);
+		mTimeText = (TextView) findViewById(R.id.time_text);
+		mHumidityText = (TextView) findViewById(R.id.humidity_text);
+		mTemperatureText = (TextView) findViewById(R.id.temperature_text);
+		mPm25Text = (TextView) findViewById(R.id.pm25_text);
+		mPm1Text = (TextView) findViewById(R.id.pm1_text);
+		mPm10Text = (TextView) findViewById(R.id.pm10_text);
+		mHumidityLabel = (TextView) findViewById(R.id.humidity_label);
+		mTemperatureLabel = (TextView) findViewById(R.id.temperature_label);
+		mPm25Label = (TextView) findViewById(R.id.pm25_label);
+		mPm1Label = (TextView) findViewById(R.id.pm1_label);
+		mPm10Label = (TextView) findViewById(R.id.pm10_label);
+		mHumidityLabel.setText(NAMES[0]);
+		mTemperatureLabel.setText(NAMES[1]);
+		mPm25Label.setText(NAMES[2]);
+		mPm1Label.setText(NAMES[3]);
+		mPm10Label.setText(NAMES[4]);
 	}
 
 	private void registerReceiver() {
@@ -180,6 +216,7 @@ public class MainActivity extends DeviceServiceActivity {
 		mEnvImage.setImageResource(getResources().getIdentifier(String.format("env_front%1$d", (mEnvIndex + 1)), "drawable", getPackageName()));
 	}
 
+	// 保存到云端
 	private void saveInBackground(String data) {
 		final String[] sa = data.split(":");
 		final int humidity = Integer.parseInt(sa[0]);
@@ -187,7 +224,7 @@ public class MainActivity extends DeviceServiceActivity {
 		int pm25 = Integer.parseInt(sa[2]);
 		int pm1 = Integer.parseInt(sa[3]);
 		int pm10 = Integer.parseInt(sa[4]);
-		final AVObject testObject = new AVObject(Constants.TAG);
+		final AVObject testObject = new AVObject(Constants.AVOS_APP_TAG);
 		testObject.put("humidity", humidity);
 		testObject.put("temperature", temperature);
 		testObject.put("pm25", pm25);
