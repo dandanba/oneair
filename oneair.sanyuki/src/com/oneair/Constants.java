@@ -3,7 +3,7 @@ import java.io.File;
 import android.os.Environment;
 
 public class Constants {
-	public static boolean CLOUD_READ = false; // 从云端读取还是蓝牙读取
+	public static boolean CLOUD_READ = true; // 从云端读取还是蓝牙读取
 	public static String PACKAGE_NAME = "com.oneair.sanyuki"; // 程序的包名
 	public static String UMENG_KEY = "5598a8c867e58e432e0004ce"; // 对应 PACKAGE_NAME 的有盟key
 	public final static String DEVICE_ADDRESS = "B4:99:4C:4C:D2:B2"; // 蓝牙的 device address
