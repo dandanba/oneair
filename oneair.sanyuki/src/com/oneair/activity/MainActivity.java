@@ -1,4 +1,5 @@
 package com.oneair.activity;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -56,10 +57,17 @@ public class MainActivity extends DeviceServiceActivity {
 	private Handler mCloudReadHandler = new Handler() {
 		public void handleMessage(android.os.Message msg) {
 			removeMessages(msg.what);
-			AVQuery<AVObject> query = AVQuery.getQuery(Constants.AVOS_APP_TAG);
-			query.addDescendingOrder("createAt"); // 递减创建时间
-			query.getFirstInBackground(mCallback);
-			sendEmptyMessageDelayed(msg.what, 10 * 60 * 1000);
+			final long current = System.currentTimeMillis();
+			if (current - mSaveTime > 10 * 60 * 1000) {
+				mSaveTime = current;
+				if (!Constants.CLOUD_READ) {
+					AVQuery<AVObject> query = AVQuery.getQuery(Constants.AVOS_APP_TAG);
+					query.addDescendingOrder("createAt"); // 递减创建时间
+					query.getFirstInBackground(mCallback);
+				}
+			}
+			displayData(null);
+			sendEmptyMessageDelayed(msg.what, 5 * 1000);
 		};
 	};
 	private GetCallback<AVObject> mCallback = new GetCallback<AVObject>() {
@@ -146,24 +154,22 @@ public class MainActivity extends DeviceServiceActivity {
 			mCurrentTime = current;
 			setDate(current);
 		}
-		if (TextUtils.isEmpty(data)) {
-			Log.i(TAG, "-----null-----");
-			return;
-		}
-		Log.i(TAG, data);
-		if (current - mPluseTime > 10 * 1000) {
-			mPluseTime = current;
-			setData(data);
-		}
-		if (current - mSaveTime > 10 * 60 * 1000) {
-			mSaveTime = current;
-			if (!Constants.CLOUD_READ) {
-				saveInBackground(data);
-			}
-		}
 		if (current - mChangeTime > 5 * 1000) {
 			mChangeTime = current;
 			changeBackground();
+		}
+		if (!TextUtils.isEmpty(data)) {
+			Log.i(TAG, data);
+			if (current - mPluseTime > 10 * 1000) {
+				mPluseTime = current;
+				setData(data);
+			}
+			if (current - mSaveTime > 10 * 60 * 1000) {
+				mSaveTime = current;
+				if (!Constants.CLOUD_READ) {
+					saveInBackground(data);
+				}
+			}
 		}
 	}
 
