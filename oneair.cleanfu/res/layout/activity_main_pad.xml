@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:background="@drawable/main_bg"
+	android:orientation="horizontal"
+	android:padding="30dp" >
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:layout_weight="2"
+		android:orientation="vertical" >
+		<ImageView
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:layout_weight="5"
+			android:scaleType="fitStart"
+			android:src="@drawable/label_bg" />
+		<FrameLayout
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:layout_marginTop="20dp"
+			android:layout_weight="1" >
+			<ImageView
+				android:id="@+id/env_image"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:scaleType="fitXY"
+				android:src="@drawable/env1" />
+			<LinearLayout
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:layout_gravity="top|left"
+				android:layout_margin="20dp"
+				android:orientation="vertical" >
+				<TextView
+					android:id="@+id/date_text"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:singleLine="true"
+					android:text="2015/12/12"
+					android:textColor="#ffffff"
+					android:textSize="21sp" />
+				<TextView
+					android:id="@+id/time_text"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:singleLine="true"
+					android:text="周三 12:30"
+					android:textColor="#ffffff"
+					android:textSize="21sp" />
+			</LinearLayout>
+			<ImageView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="bottom|left"
+				android:src="@drawable/logo"
+				android:visibility="gone" />
+		</FrameLayout>
+	</LinearLayout>
+	<View
+		android:layout_width="20dp"
+		android:layout_height="fill_parent" />
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:layout_weight="5"
+		android:orientation="vertical" >
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:layout_weight="1"
+			android:background="@drawable/button_bg"
+			android:gravity="center" >
+			<TextView
+				android:id="@+id/temperature_text"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:singleLine="true"
+				android:text="30"
+				android:textColor="#ffffff"
+				android:textSize="25sp" />
+			<TextView
+				android:id="@+id/temperature_label"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_marginLeft="20dp"
+				android:singleLine="true"
+				android:text="温度"
+				android:textColor="#ffffff"
+				android:textSize="17sp" />
+		</LinearLayout>
+		<View
+			android:layout_width="match_parent"
+			android:layout_height="20dp" />
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:layout_weight="1"
+			android:background="@drawable/button_bg"
+			android:gravity="center" >
+			<TextView
+				android:id="@+id/humidity_text"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:singleLine="true"
+				android:text="30"
+				android:textColor="#ffffff"
+				android:textSize="25sp" />
+			<TextView
+				android:id="@+id/humidity_label"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_marginLeft="20dp"
+				android:singleLine="true"
+				android:text="湿度"
+				android:textColor="#ffffff"
+				android:textSize="17sp" />
+		</LinearLayout>
+		<View
+			android:layout_width="match_parent"
+			android:layout_height="20dp" />
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:layout_weight="1"
+			android:background="@drawable/button_bg"
+			android:gravity="center" >
+			<TextView
+				android:id="@+id/pm25_text"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:singleLine="true"
+				android:text="30"
+				android:textColor="#ffffff"
+				android:textSize="25sp" />
+			<TextView
+				android:id="@+id/pm25_label"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_marginLeft="20dp"
+				android:singleLine="true"
+				android:text="PM2.5"
+				android:textColor="#ffffff"
+				android:textSize="17sp" />
+		</LinearLayout>
+		<View
+			android:layout_width="match_parent"
+			android:layout_height="20dp" />
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:layout_weight="1"
+			android:background="@drawable/button_bg"
+			android:gravity="center" >
+			<TextView
+				android:id="@+id/pm10_text"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:singleLine="true"
+				android:text="30"
+				android:textColor="#ffffff"
+				android:textSize="25sp" />
+			<TextView
+				android:id="@+id/pm10_label"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_marginLeft="20dp"
+				android:singleLine="true"
+				android:text="PM10"
+				android:textColor="#ffffff"
+				android:textSize="17sp" />
+		</LinearLayout>
+		<View
+			android:layout_width="match_parent"
+			android:layout_height="20dp" />
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:layout_weight="1"
+			android:background="@drawable/button_bg"
+			android:gravity="center" >
+			<TextView
+				android:id="@+id/pm1_text"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:singleLine="true"
+				android:text="30"
+				android:textColor="#ffffff"
+				android:textSize="25sp" />
+			<TextView
+				android:id="@+id/pm1_label"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_marginLeft="20dp"
+				android:singleLine="true"
+				android:text="PM1"
+				android:textColor="#ffffff"
+				android:textSize="17sp" />
+		</LinearLayout>
+	</LinearLayout>
+</LinearLayout>
