@@ -72,13 +72,15 @@ public class MainActivity extends DeviceServiceActivity {
 		@Override
 		public void done(AVObject object, AVException e) {
 			final AVObject testObject = object;
-			final int humidity = testObject.getInt("humidity");
-			final int temperature = testObject.getInt("temperature");
-			final int pm25 = testObject.getInt("pm25");
-			final int pm1 = testObject.getInt("pm1");
-			final int pm10 = testObject.getInt("pm10");
-			final String data = String.format("%1$d:%2$d:%3$d:%4$d:%5$d", humidity, temperature, pm25, pm1, pm10);
-			displayData(data);
+			if (object != null) {
+				final int humidity = testObject.getInt("humidity");
+				final int temperature = testObject.getInt("temperature");
+				final int pm25 = testObject.getInt("pm25");
+				final int pm1 = testObject.getInt("pm1");
+				final int pm10 = testObject.getInt("pm10");
+				final String data = String.format("%1$d:%2$d:%3$d:%4$d:%5$d", humidity, temperature, pm25, pm1, pm10);
+				displayData(data);
+			}
 		}
 	};
 
@@ -88,7 +90,7 @@ public class MainActivity extends DeviceServiceActivity {
 		UmengUpdateAgent.setDefault();
 		UmengUpdateAgent.silentUpdate(this);
 		AVOSCloud.initialize(this, Constants.AVOS_APP_ID, Constants.AVOS_APP_KEY);
-		setContentView(R.layout.activity_main);
+		setContentView(Constants.CLOUD_READ ? R.layout.activity_main_pad : R.layout.activity_main);
 		initViews();
 		if (Constants.CLOUD_READ) {
 			mCloudReadHandler.sendEmptyMessage(1);
@@ -214,10 +216,10 @@ public class MainActivity extends DeviceServiceActivity {
 
 	private void changeBackground() {
 		mEnvIndex++;
-		if (mEnvIndex >= 2) {
+		if (mEnvIndex >= 5) {
 			mEnvIndex = 0;
 		}
-		mEnvImage.setImageResource(getResources().getIdentifier(String.format("env_front%1$d", (mEnvIndex + 1)), "drawable", getPackageName()));
+		mEnvImage.setImageResource(getResources().getIdentifier(String.format(Constants.CLOUD_READ ? "env%1$d" : "env_front%1$d", (mEnvIndex + 1)), "drawable", getPackageName()));
 	}
 
 	// 保存到云端
