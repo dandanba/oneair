@@ -60,11 +60,9 @@ public class MainActivity extends DeviceServiceActivity {
 			final long current = System.currentTimeMillis();
 			if (current - mSaveTime > 10 * 60 * 1000) {
 				mSaveTime = current;
-				if (!Constants.CLOUD_READ) {
-					AVQuery<AVObject> query = AVQuery.getQuery(Constants.AVOS_APP_TAG);
-					query.addDescendingOrder("createAt"); // 递减创建时间
-					query.getFirstInBackground(mCallback);
-				}
+				AVQuery<AVObject> query = AVQuery.getQuery(Constants.AVOS_APP_TAG);
+				query.addDescendingOrder("createAt"); // 递减创建时间
+				query.getFirstInBackground(mCallback);
 			}
 			displayData(null);
 			sendEmptyMessageDelayed(msg.what, 5 * 1000);
@@ -216,7 +214,7 @@ public class MainActivity extends DeviceServiceActivity {
 
 	private void changeBackground() {
 		mEnvIndex++;
-		if (mEnvIndex >= 5) {
+		if (mEnvIndex >= 2) {
 			mEnvIndex = 0;
 		}
 		mEnvImage.setImageResource(getResources().getIdentifier(String.format("env_front%1$d", (mEnvIndex + 1)), "drawable", getPackageName()));
