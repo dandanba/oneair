@@ -1,5 +1,4 @@
 package com.oneair.activity;
-
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -23,8 +22,8 @@ import com.avos.avoscloud.AVObject;
 import com.avos.avoscloud.AVQuery;
 import com.avos.avoscloud.GetCallback;
 import com.oneair.Constants;
-import com.oneair.fragment.VideoFragment;
 import com.oneair.cleanfu.R;
+import com.oneair.fragment.VideoFragment;
 import com.oneair.utils.AlarmUtils;
 import com.thingstec.ble.DeviceServiceActivity;
 import com.umeng.update.UmengUpdateAgent;
@@ -57,13 +56,8 @@ public class MainActivity extends DeviceServiceActivity {
 	private Handler mCloudReadHandler = new Handler() {
 		public void handleMessage(android.os.Message msg) {
 			removeMessages(msg.what);
-			final long current = System.currentTimeMillis();
-			if (current - mSaveTime > 10 * 60 * 1000) {
-				mSaveTime = current;
-				AVQuery<AVObject> query = AVQuery.getQuery(Constants.AVOS_APP_TAG);
-				query.addDescendingOrder("createAt"); // 递减创建时间
-				query.getFirstInBackground(mCallback);
-			}
+			AVQuery<AVObject> query = AVQuery.getQuery(Constants.AVOS_APP_TAG);
+			query.getInBackground(Constants.UPDATE_ID, mCallback);
 			displayData(null);
 			sendEmptyMessageDelayed(msg.what, 5 * 1000);
 		};
@@ -160,15 +154,14 @@ public class MainActivity extends DeviceServiceActivity {
 		}
 		if (!TextUtils.isEmpty(data)) {
 			Log.i(TAG, data);
-			if (current - mPluseTime > 10 * 1000) {
+			if (current - mPluseTime > 5 * 1000) { // 5 秒钟更新数据并保存
 				mPluseTime = current;
 				setData(data);
+				saveInBackground(data, Constants.UPDATE_ID); // 用制定的id更新
 			}
-			if (current - mSaveTime > 10 * 60 * 1000) {
+			if (!Constants.CLOUD_READ && current - mSaveTime > 10 * 60 * 1000) {
 				mSaveTime = current;
-				if (!Constants.CLOUD_READ) {
-					saveInBackground(data);
-				}
+				saveInBackground(data, null); // 保存数据
 			}
 		}
 	}
@@ -223,14 +216,31 @@ public class MainActivity extends DeviceServiceActivity {
 	}
 
 	// 保存到云端
-	private void saveInBackground(String data) {
+	private void saveInBackground(String data, String updateId) {
 		final String[] sa = data.split(":");
 		final int humidity = Integer.parseInt(sa[0]);
 		final int temperature = Integer.parseInt(sa[1]);
-		int pm25 = Integer.parseInt(sa[2]);
-		int pm1 = Integer.parseInt(sa[3]);
-		int pm10 = Integer.parseInt(sa[4]);
-		final AVObject testObject = new AVObject(Constants.AVOS_APP_TAG);
+		final int pm25 = Integer.parseInt(sa[2]);
+		final int pm1 = Integer.parseInt(sa[3]);
+		final int pm10 = Integer.parseInt(sa[4]);
+		if (updateId == null) {
+			final AVObject testObject = new AVObject(Constants.AVOS_APP_TAG);
+			saveInBackground(testObject, humidity, temperature, pm25, pm1, pm10);
+		} else {
+			AVQuery<AVObject> query = AVQuery.getQuery(Constants.AVOS_APP_TAG);
+			query.getInBackground(updateId, new GetCallback<AVObject>() {
+				@Override
+				public void done(AVObject object, AVException e) {
+					final AVObject testObject = object;
+					if (testObject != null) {
+						saveInBackground(testObject, humidity, temperature, pm25, pm1, pm10);
+					}
+				}
+			});
+		}
+	}
+
+	private void saveInBackground(AVObject testObject, int humidity, int temperature, int pm25, int pm1, int pm10) {
 		testObject.put("humidity", humidity);
 		testObject.put("temperature", temperature);
 		testObject.put("pm25", pm25);
