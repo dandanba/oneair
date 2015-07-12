@@ -223,24 +223,28 @@ public class MainActivity extends DeviceServiceActivity {
 		final int pm25 = Integer.parseInt(sa[2]);
 		final int pm1 = Integer.parseInt(sa[3]);
 		final int pm10 = Integer.parseInt(sa[4]);
-		if (updateId == null) {
-			final AVObject testObject = new AVObject(Constants.AVOS_APP_TAG);
-			saveInBackground(testObject, humidity, temperature, pm25, pm1, pm10);
-		} else {
-			AVQuery<AVObject> query = AVQuery.getQuery(Constants.AVOS_APP_TAG);
-			query.getInBackground(updateId, new GetCallback<AVObject>() {
-				@Override
-				public void done(AVObject object, AVException e) {
-					final AVObject testObject = object;
-					if (testObject != null) {
-						saveInBackground(testObject, humidity, temperature, pm25, pm1, pm10);
-					}
+		AVObject testObject;
+		if (updateId != null) {
+			final AVQuery<AVObject> query = AVQuery.getQuery(Constants.AVOS_APP_TAG);
+			if (query != null) {
+				try {
+					testObject = query.get(updateId);
+					saveInBackground(testObject, humidity, temperature, pm25, pm1, pm10);
+				} catch (AVException e) {
+					Log.e(TAG, "query", e);
 				}
-			});
+			}
+		} else {
+			testObject = new AVObject(Constants.AVOS_APP_TAG);
+			saveInBackground(testObject, humidity, temperature, pm25, pm1, pm10);
 		}
 	}
 
 	private void saveInBackground(AVObject testObject, int humidity, int temperature, int pm25, int pm1, int pm10) {
+		if (testObject == null) {
+			Log.i(TAG, "saveInBackgroud -> null");
+			return;
+		}
 		testObject.put("humidity", humidity);
 		testObject.put("temperature", temperature);
 		testObject.put("pm25", pm25);
