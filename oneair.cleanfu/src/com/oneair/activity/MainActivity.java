@@ -1,4 +1,5 @@
 package com.oneair.activity;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -46,7 +47,7 @@ public class MainActivity extends DeviceServiceActivity {
 	private WakeLock mWakeLock;
 	private File[] mVideos;
 	private boolean mRepeatingAlarm;
-	private long mCurrentTime, mPluseTime, mSaveTime, mChangeTime;
+	private long mCurrentTime, mPluseTime, mSaveTime, mChangeTime, mUpdateTime;
 	private TextView mDateText, mTimeText;
 	private TextView mHumidityText, mTemperatureText, mPm25Text, mPm1Text, mPm10Text;
 	private TextView mHumidityLabel, mTemperatureLabel, mPm25Label, mPm1Label, mPm10Label;
@@ -82,7 +83,6 @@ public class MainActivity extends DeviceServiceActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		UmengUpdateAgent.setDefault();
-		UmengUpdateAgent.silentUpdate(this);
 		AVOSCloud.initialize(this, Constants.AVOS_APP_ID, Constants.AVOS_APP_KEY);
 		setContentView(Constants.CLOUD_READ ? R.layout.activity_main_pad : R.layout.activity_main);
 		initViews();
@@ -151,6 +151,10 @@ public class MainActivity extends DeviceServiceActivity {
 		if (current - mChangeTime > 5 * 1000) {
 			mChangeTime = current;
 			changeBackground();
+		}
+		if (current - mUpdateTime > 12 * 60 * 60 * 1000) {
+			mUpdateTime = current;
+			UmengUpdateAgent.silentUpdate(MainActivity.this);
 		}
 		if (!TextUtils.isEmpty(data)) {
 			Log.i(TAG, data);
