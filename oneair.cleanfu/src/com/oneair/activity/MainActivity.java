@@ -231,12 +231,12 @@ public class MainActivity extends DeviceServiceActivity {
 		if (updateId != null) {
 			final AVQuery<AVObject> query = AVQuery.getQuery(Constants.AVOS_APP_TAG);
 			if (query != null) {
-				try {
-					testObject = query.get(updateId);
-					saveInBackground(testObject, humidity, temperature, pm25, pm1, pm10);
-				} catch (AVException e) {
-					Log.e(TAG, "query", e);
-				}
+				query.getInBackground(updateId, new GetCallback<AVObject>() {
+					@Override
+					public void done(AVObject testObject, AVException e) {
+						saveInBackground(testObject, humidity, temperature, pm25, pm1, pm10);
+					}
+				});
 			}
 		} else {
 			testObject = new AVObject(Constants.AVOS_APP_TAG);
