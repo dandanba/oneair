@@ -69,7 +69,7 @@
 		<!-- Caution! Do not change this app key. It is only for demo usage. -->
 		<meta-data
 			android:name="UMENG_APPKEY"
-			android:value="5598a8c867e58e432e0004ce" >
+			android:value="55a33d7067e58e63d400071f" >
 		</meta-data>
 		<meta-data
 			android:name="UMENG_CHANNEL"
