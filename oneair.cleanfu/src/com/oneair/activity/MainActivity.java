@@ -22,6 +22,7 @@ import com.avos.avoscloud.AVOSCloud;
 import com.avos.avoscloud.AVObject;
 import com.avos.avoscloud.AVQuery;
 import com.avos.avoscloud.GetCallback;
+import com.avos.avoscloud.SaveCallback;
 import com.oneair.Constants;
 import com.oneair.cleanfu.R;
 import com.oneair.fragment.VideoFragment;
@@ -222,25 +223,27 @@ public class MainActivity extends DeviceServiceActivity {
 	// 保存到云端
 	private void saveInBackground(String data, String updateId) {
 		final String[] sa = data.split(":");
-		final int humidity = Integer.parseInt(sa[0]);
-		final int temperature = Integer.parseInt(sa[1]);
-		final int pm25 = Integer.parseInt(sa[2]);
-		final int pm1 = Integer.parseInt(sa[3]);
-		final int pm10 = Integer.parseInt(sa[4]);
-		AVObject testObject;
-		if (updateId != null) {
-			final AVQuery<AVObject> query = AVQuery.getQuery(Constants.AVOS_APP_TAG);
-			if (query != null) {
-				query.getInBackground(updateId, new GetCallback<AVObject>() {
-					@Override
-					public void done(AVObject testObject, AVException e) {
-						saveInBackground(testObject, humidity, temperature, pm25, pm1, pm10);
-					}
-				});
+		if (!Constants.CLOUD_READ && sa != null && sa.length == 5) {
+			final int humidity = Integer.parseInt(sa[0]);
+			final int temperature = Integer.parseInt(sa[1]);
+			final int pm25 = Integer.parseInt(sa[2]);
+			final int pm1 = Integer.parseInt(sa[3]);
+			final int pm10 = Integer.parseInt(sa[4]);
+			AVObject testObject;
+			if (updateId != null) {
+				final AVQuery<AVObject> query = AVQuery.getQuery(Constants.AVOS_APP_TAG);
+				if (query != null) {
+					query.getInBackground(updateId, new GetCallback<AVObject>() {
+						@Override
+						public void done(AVObject testObject, AVException e) {
+							saveInBackground(testObject, humidity, temperature, pm25, pm1, pm10);
+						}
+					});
+				}
+			} else {
+				testObject = new AVObject(Constants.AVOS_APP_TAG);
+				saveInBackground(testObject, humidity, temperature, pm25, pm1, pm10);
 			}
-		} else {
-			testObject = new AVObject(Constants.AVOS_APP_TAG);
-			saveInBackground(testObject, humidity, temperature, pm25, pm1, pm10);
 		}
 	}
 
